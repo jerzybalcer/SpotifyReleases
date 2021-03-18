@@ -1,0 +1,27 @@
+<html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>Spotify Releases</title>
+</head>
+
+<body>
+
+    <div id='container' style="text-align: center;">
+        <h1>Spotify New Releases</h1>
+
+    </div>
+
+    <script>
+    $(document).ready(()=>{
+        $.get('/getReleases', (res)=>{
+            var releases = JSON.parse(res);
+
+            for(var i =0 ;i<releases.length; i++){
+                $('#container').append(`<p>${releases[i].artists[0].name} - ${releases[i].name}</p>`)
+            }
+        })
+    })
+    </script>
+
+</body>
+</html>
