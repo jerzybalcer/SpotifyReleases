@@ -5,22 +5,53 @@
 </head>
 
 <body>
+    <p style='margin:1;'>Country</p>
+    <select id='selectCountry' name='selectCountry' style='width: 60px;'>
+        <option value='ALL' selected='true'>ALL</option>
+    </select>
 
-    <div id='container' style="text-align: center;">
-        <h1>Spotify New Releases</h1>
+    <h1 style="text-align: center;">Spotify New Releases</h1>
 
-    </div>
+    <div id='container' style="text-align: center;"></div>
 
     <script>
     $(document).ready(()=>{
-        $.get('/getReleases', (res)=>{
-            var releases = JSON.parse(res);
+        getCountryCodes();
+        getReleases('ALL');
+    })
 
-            for(var i =0 ;i<releases.length; i++){
-                $('#container').append(`<p>${releases[i].artists[0].name} - ${releases[i].name}</p>`)
+    $('#selectCountry').on('change',()=>{
+        var country = $('#selectCountry').val();
+        getReleases(country);
+    })
+
+    function getReleases(country){
+        $.post('/getReleases', country)
+            .done((res)=>{
+                $('#container').empty();
+
+                var releases = JSON.parse(res);
+
+                for(var i =0 ;i<releases.length; i++){
+                    $('#container').append(`<p>${releases[i].artists[0].name} - ${releases[i].name}</p>`)
+                }
+            })
+            .fail(()=>{
+                $('#container').empty();
+                $('#container').append(`<p>There are no new releases for this country now!</p>`);
+            })
+    }
+
+    function getCountryCodes(){
+        $.post('/getCountryCodes', (res)=>{
+
+            var codes = JSON.parse(res);
+
+            for(var i =0 ;i<codes.length; i++){
+                $('#selectCountry').append(`<option value='${codes[i]}'>${codes[i]}</option>`);
             }
         })
-    })
+    }
     </script>
 
 </body>

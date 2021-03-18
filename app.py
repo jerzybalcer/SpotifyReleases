@@ -10,25 +10,45 @@ from spotipy.oauth2 import SpotifyClientCredentials
 auth_manager = SpotifyClientCredentials()
 
 # Flask Framework for creating web page
-from flask import Flask, render_template
+from flask import Flask, render_template, request, json
 app = Flask(__name__)
 
-import json
 
 # Home Page
 @app.route('/')
 def home():
     return render_template('index.html')
 
-@app.route('/getReleases')
+@app.route('/getReleases', methods=['POST'])
 def getReleases():
-    # Authenticate to Spotify
-    spotify = spotipy.Spotify(auth_manager=auth_manager)
+    if request.method == 'POST':
+        # Authenticate to Spotify
+        spotify = spotipy.Spotify(auth_manager=auth_manager)
 
-    # Get New Releases
-    releases = spotify.new_releases('PL', 20, 0)['albums']['items']
+        # Get country chosen by user
+        country = request.get_data().decode('utf-8')
+        if country == 'ALL': country = None
 
-    return json.dumps(releases) # Convert dict to string
+        # Get New Releases
+        releases = spotify.new_releases(country=country, limit=30)['albums']['items']
+
+        if len(releases) < 1: return 404 # Return fail code if nothing was returned from Spotify
+
+        return json.dumps(releases) # Convert dict to string
+
+@app.route('/getCountryCodes', methods=['POST'])
+def getCountryCodes():
+    if request.method == 'POST':
+
+        import pycountry
+        countriesList = list(pycountry.countries) # Get all ISO 3166 countries
+
+        codes = {}
+
+        for country in countriesList:
+            codes[countriesList.index(country)] = country.alpha_2
+
+        return  json.dumps(list(codes.values()))# Convert dict to list then to string
 
 # Start Web Server
 if __name__ == '__main__':
